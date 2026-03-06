@@ -1,0 +1,11 @@
+# Generated (if any)
+dist/
+generated/
+*.generated.*
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
