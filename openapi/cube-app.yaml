@@ -1,0 +1,260 @@
+openapi: 3.0.3
+info:
+  title: Cube ↔ App API
+  description: |
+    REST API between the on-device cube and the mobile companion app.
+    Used over LAN (Wi‑Fi) or tunnel after Bluetooth pairing. All communication encrypted (TLS or app-layer).
+  version: 0.1.0
+  contact:
+    name: Wisdom
+
+servers:
+  - url: http://cube.local
+    description: Cube on local network (replace with actual host/port in app)
+  - url: http://localhost:8080
+    description: Local dev / stub
+
+paths:
+  /status:
+    get:
+      summary: Cube status and version
+      operationId: getStatus
+      tags: [status]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        '503':
+          description: Cube not ready
+
+  /config:
+    get:
+      summary: Get device config (name, default privacy mode, etc.)
+      operationId: getConfig
+      tags: [config]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceConfig'
+    patch:
+      summary: Update device config (partial)
+      operationId: patchConfig
+      tags: [config]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceConfigPatch'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceConfig'
+        '400':
+          description: Invalid payload
+
+  /devices:
+    get:
+      summary: List discovered devices (lights, etc.)
+      operationId: listDevices
+      tags: [devices]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceList'
+  /routines:
+    get:
+      summary: List routines
+      operationId: listRoutines
+      tags: [routines]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoutineList'
+  /profiles:
+    get:
+      summary: List profiles (adult, guest, child)
+      operationId: listProfiles
+      tags: [profiles]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileList'
+  /logs:
+    get:
+      summary: Query behaviour log (chain summaries, intents, actions)
+      operationId: queryLogs
+      tags: [logs]
+      parameters:
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogQueryResult'
+  /backup:
+    post:
+      summary: Generate backup bundle (routines, devices, profiles, config)
+      operationId: createBackup
+      tags: [backup]
+      responses:
+        '200':
+          description: Backup payload (opaque blob or JSON per backup format)
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '503':
+          description: Cube busy or not ready
+  /restore:
+    post:
+      summary: Restore from backup payload
+      operationId: restoreBackup
+      tags: [backup]
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Restore accepted
+        '400':
+          description: Invalid backup
+        '409':
+          description: Conflict (version/merge)
+
+components:
+  schemas:
+    Status:
+      type: object
+      required: [version, ready]
+      properties:
+        version:
+          type: string
+          example: "0.1.0"
+        ready:
+          type: boolean
+        privacy_mode:
+          type: string
+          enum: [paranoid, normal]
+
+    DeviceConfig:
+      type: object
+      properties:
+        device_name:
+          type: string
+        default_privacy_mode:
+          type: string
+          enum: [paranoid, normal]
+
+    DeviceConfigPatch:
+      type: object
+      properties:
+        device_name:
+          type: string
+        default_privacy_mode:
+          type: string
+          enum: [paranoid, normal]
+
+    DeviceList:
+      type: object
+      properties:
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceSummary'
+
+    DeviceSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        room:
+          type: string
+
+    RoutineList:
+      type: object
+      properties:
+        routines:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutineSummary'
+
+    RoutineSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+
+    ProfileList:
+      type: object
+      properties:
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProfileSummary'
+
+    ProfileSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum: [adult, guest, child]
+        display_name:
+          type: string
+
+    LogQueryResult:
+      type: object
+      properties:
+        chains:
+          type: array
+          items:
+            type: object
+
+tags:
+  - name: status
+  - name: config
+  - name: devices
+  - name: routines
+  - name: profiles
+  - name: logs
+  - name: backup
