@@ -1,4 +1,5 @@
 # Generated (if any)
+.openapi-bundle-smoke.yaml
 dist/
 generated/
 *.generated.*

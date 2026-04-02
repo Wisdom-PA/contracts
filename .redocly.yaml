@@ -1,0 +1,6 @@
+apis:
+  cubeApp:
+    root: openapi/cube-app.yaml
+
+rules:
+  no-unused-components: warn
