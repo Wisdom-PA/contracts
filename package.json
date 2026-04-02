@@ -1,0 +1,13 @@
+{
+  "name": "wisdom-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "lint": "npm run lint:openapi",
+    "lint:openapi": "redocly lint openapi/cube-app.yaml",
+    "test": "redocly bundle openapi/cube-app.yaml -o .openapi-bundle-smoke.yaml && node -e \"require('fs').unlinkSync('.openapi-bundle-smoke.yaml')\""
+  },
+  "devDependencies": {
+    "@redocly/cli": "^1.34.5"
+  }
+}
