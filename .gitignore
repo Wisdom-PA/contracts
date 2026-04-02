@@ -9,3 +9,6 @@ generated/
 
 # OS
 .DS_Store
+
+# Node Modules
+node_modules/
