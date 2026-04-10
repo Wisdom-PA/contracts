@@ -73,6 +73,64 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceList'
+  /devices/{deviceId}:
+    patch:
+      summary: Partial update of device state (e.g. light power, brightness)
+      operationId: patchDevice
+      tags: [devices]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceStatePatch'
+      responses:
+        '200':
+          description: Updated device summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceSummary'
+        '400':
+          description: Invalid payload
+        '404':
+          description: Unknown device
+  /chat:
+    post:
+      summary: Text message to on-device assistant (app satellite client)
+      operationId: sendChat
+      tags: [chat]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessage'
+      responses:
+        '200':
+          description: Assistant reply
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatReply'
+  /internet-activity:
+    get:
+      summary: List recent external (internet) calls for transparency UI
+      operationId: listInternetActivity
+      tags: [transparency]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternetActivityList'
   /routines:
     get:
       summary: List routines
@@ -168,6 +226,9 @@ components:
         privacy_mode:
           type: string
           enum: [paranoid, normal]
+        global_offline:
+          type: boolean
+          description: When true, cube blocks outbound internet (Plan global offline mode).
 
     DeviceConfig:
       type: object
@@ -177,6 +238,8 @@ components:
         default_privacy_mode:
           type: string
           enum: [paranoid, normal]
+        global_offline:
+          type: boolean
 
     DeviceConfigPatch:
       type: object
@@ -186,6 +249,8 @@ components:
         default_privacy_mode:
           type: string
           enum: [paranoid, normal]
+        global_offline:
+          type: boolean
 
     DeviceList:
       type: object
@@ -206,6 +271,60 @@ components:
           type: string
         room:
           type: string
+        power:
+          type: boolean
+          description: For lights and similar on/off devices
+        brightness:
+          type: number
+          description: Normalized brightness 0.0–1.0 when dimmable
+
+    DeviceStatePatch:
+      type: object
+      properties:
+        power:
+          type: boolean
+        brightness:
+          type: number
+
+    ChatMessage:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    ChatReply:
+      type: object
+      required: [reply, source]
+      properties:
+        reply:
+          type: string
+        source:
+          type: string
+          enum: [on_device, online]
+
+    InternetActivityEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        at:
+          type: string
+          format: date-time
+        service_category:
+          type: string
+        summary:
+          type: string
+        profile_display_name:
+          type: string
+
+    InternetActivityList:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/InternetActivityEvent'
 
     RoutineList:
       type: object
@@ -258,3 +377,5 @@ tags:
   - name: profiles
   - name: logs
   - name: backup
+  - name: chat
+  - name: transparency
