@@ -119,6 +119,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceErrorResponse'
+        '503':
+          description: Device unreachable (integration / health)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceErrorResponse'
   /chat:
     post:
       summary: Text message to on-device assistant (app satellite client)
@@ -325,6 +331,9 @@ components:
         brightness:
           type: number
           description: Normalized brightness 0.0–1.0 when dimmable
+        reachable:
+          type: boolean
+          description: When false, state-changing requests should fail until discovery/health recovers the device (F6.T3)
 
     DeviceStatePatch:
       type: object
