@@ -73,6 +73,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceList'
+  /devices/discover:
+    post:
+      summary: Run device discovery (stub may complete immediately with no new devices)
+      operationId: discoverDevices
+      tags: [devices]
+      responses:
+        '200':
+          description: Discovery finished (synchronous stub returns current list)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceDiscoverResponse'
+        '405':
+          description: Method not allowed
   /devices/{deviceId}:
     patch:
       summary: Partial update of device state (e.g. light power, brightness)
@@ -101,6 +115,10 @@ paths:
           description: Invalid payload
         '404':
           description: Unknown device
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceErrorResponse'
   /chat:
     post:
       summary: Text message to on-device assistant (app satellite client)
@@ -251,6 +269,36 @@ components:
           enum: [paranoid, normal]
         global_offline:
           type: boolean
+
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    DeviceErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiError'
+
+    DeviceDiscoverResponse:
+      type: object
+      required: [status, added, devices]
+      properties:
+        status:
+          type: string
+          enum: [complete]
+        added:
+          type: integer
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceSummary'
 
     DeviceList:
       type: object
