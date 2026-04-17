@@ -234,6 +234,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RoutineList'
+  /profiles/{profileId}:
+    patch:
+      summary: Update profile metadata (display name)
+      operationId: patchProfile
+      tags: [profiles]
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfilePatch'
+      responses:
+        '200':
+          description: Updated profile summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileSummary'
+        '400':
+          description: Invalid body (e.g. missing display_name)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Unknown profile id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '501':
+          description: Profile store does not support edits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '405':
+          description: Method not allowed
   /profiles:
     get:
       summary: List profiles (adult, guest, child)
@@ -540,6 +584,13 @@ components:
           enum: [adult, guest, child]
         display_name:
           type: string
+
+    ProfilePatch:
+      type: object
+      properties:
+        display_name:
+          type: string
+          description: New display name for the profile
 
     LogQueryResult:
       type: object
