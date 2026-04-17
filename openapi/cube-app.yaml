@@ -148,6 +148,15 @@ paths:
       summary: List recent external (internet) calls for transparency UI
       operationId: listInternetActivity
       tags: [transparency]
+      parameters:
+        - name: limit
+          in: query
+          description: Max number of calls to return (newest first)
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 200
       responses:
         '200':
           description: OK
@@ -155,6 +164,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternetActivityList'
+        '405':
+          description: Method not allowed
   /routines/history:
     get:
       summary: Recent scheduled routine executions (inspection)
