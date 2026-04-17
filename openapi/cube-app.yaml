@@ -155,6 +155,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternetActivityList'
+  /routines/history:
+    get:
+      summary: Recent scheduled routine executions (inspection)
+      operationId: listRoutineRunHistory
+      tags: [routines]
+      parameters:
+        - name: limit
+          in: query
+          description: Max number of runs to return (newest first)
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 200
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoutineRunHistory'
+        '405':
+          description: Method not allowed
+  /routines/{routineId}:
+    patch:
+      summary: Update routine metadata (display name)
+      operationId: patchRoutine
+      tags: [routines]
+      parameters:
+        - name: routineId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoutinePatch'
+      responses:
+        '200':
+          description: Updated routine summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoutineSummary'
+        '400':
+          description: Invalid body (e.g. missing name)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Unknown routine id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '501':
+          description: Catalog does not support edits (read-only fixture)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '405':
+          description: Method not allowed
   /routines:
     get:
       summary: List routines
@@ -398,6 +465,62 @@ components:
           type: string
         name:
           type: string
+
+    RoutinePatch:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New display name for the routine
+
+    RoutineRunStep:
+      type: object
+      required: [index, kind, summary, ok]
+      properties:
+        index:
+          type: integer
+        kind:
+          type: string
+        summary:
+          type: string
+        ok:
+          type: boolean
+        error_code:
+          type: string
+          nullable: true
+        error_message:
+          type: string
+          nullable: true
+
+    RoutineRunEntry:
+      type: object
+      required: [run_id, at, routine_id, routine_name, ok, steps]
+      properties:
+        run_id:
+          type: string
+          format: uuid
+        at:
+          type: string
+          format: date-time
+        routine_id:
+          type: string
+        routine_name:
+          type: string
+        ok:
+          type: boolean
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutineRunStep'
+
+    RoutineRunHistory:
+      type: object
+      required: [runs]
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutineRunEntry'
 
     ProfileList:
       type: object
